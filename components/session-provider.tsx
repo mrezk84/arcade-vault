@@ -3,8 +3,7 @@
 import {
   createContext,
   useContext,
-  useEffect,
-  useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 
@@ -21,7 +20,13 @@ type SessionContextValue = {
 
 const SessionContext = createContext<SessionContextValue | null>(null);
 
-function readUser(): User {
+// Store externo respaldado por localStorage, leído vía useSyncExternalStore
+// para evitar setState dentro de un efecto y desajustes de hidratación SSR/cliente.
+const listeners = new Set<() => void>();
+let userCache: User | undefined;
+let scoresCache: SavedScore[] | undefined;
+
+function loadUser(): User {
   try {
     return JSON.parse(localStorage.getItem("av_user") || "null");
   } catch {
@@ -29,7 +34,7 @@ function readUser(): User {
   }
 }
 
-function readScores(): SavedScore[] {
+function loadScores(): SavedScore[] {
   try {
     return JSON.parse(localStorage.getItem("av_scores") || "[]");
   } catch {
@@ -37,36 +42,66 @@ function readScores(): SavedScore[] {
   }
 }
 
+function subscribe(callback: () => void) {
+  listeners.add(callback);
+  return () => listeners.delete(callback);
+}
+
+function emit() {
+  listeners.forEach((l) => l());
+}
+
+function getUserSnapshot(): User {
+  if (userCache === undefined) userCache = loadUser();
+  return userCache;
+}
+
+function getUserServerSnapshot(): User {
+  return null;
+}
+
+function getScoresSnapshot(): SavedScore[] {
+  if (scoresCache === undefined) scoresCache = loadScores();
+  return scoresCache;
+}
+
+function getScoresServerSnapshot(): SavedScore[] {
+  return [];
+}
+
+function setUserCache(u: User) {
+  userCache = u;
+  try {
+    localStorage.setItem("av_user", JSON.stringify(u));
+  } catch {}
+  emit();
+}
+
+function clearUserCache() {
+  userCache = null;
+  try {
+    localStorage.removeItem("av_user");
+  } catch {}
+  emit();
+}
+
+function pushScoreCache(entry: { game: string; score: number; name: string }) {
+  const next = [...(scoresCache ?? loadScores()), { ...entry, at: Date.now() }];
+  scoresCache = next;
+  try {
+    localStorage.setItem("av_scores", JSON.stringify(next));
+  } catch {}
+  emit();
+}
+
 export function SessionProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User>(null);
-  const [scores, setScores] = useState<SavedScore[]>([]);
+  const user = useSyncExternalStore(subscribe, getUserSnapshot, getUserServerSnapshot);
+  const scores = useSyncExternalStore(subscribe, getScoresSnapshot, getScoresServerSnapshot);
 
-  useEffect(() => {
-    setUser(readUser());
-    setScores(readScores());
-  }, []);
-
-  const login = (u: User) => {
-    setUser(u);
-    try {
-      localStorage.setItem("av_user", JSON.stringify(u));
-    } catch {}
-  };
-
-  const logout = () => {
-    setUser(null);
-    try {
-      localStorage.removeItem("av_user");
-    } catch {}
-  };
-
-  const saveScore = (entry: { game: string; score: number; name: string }) => {
-    const next = [...scores, { ...entry, at: Date.now() }];
-    setScores(next);
-    try {
-      localStorage.setItem("av_scores", JSON.stringify(next));
-    } catch {}
-  };
+  const login = (u: User) => setUserCache(u);
+  const logout = () => clearUserCache();
+  const saveScore = (entry: { game: string; score: number; name: string }) =>
+    pushScoreCache(entry);
 
   const bestScoreFor = (gameId: string): SavedScore | null => {
     if (!user) return null;
