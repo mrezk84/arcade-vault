@@ -25,6 +25,7 @@ const SessionContext = createContext<SessionContextValue | null>(null);
 const listeners = new Set<() => void>();
 let userCache: User | undefined;
 let scoresCache: SavedScore[] | undefined;
+const EMPTY_SCORES: SavedScore[] = [];
 
 function loadUser(): User {
   try {
@@ -66,7 +67,7 @@ function getScoresSnapshot(): SavedScore[] {
 }
 
 function getScoresServerSnapshot(): SavedScore[] {
-  return [];
+  return EMPTY_SCORES;
 }
 
 function setUserCache(u: User) {
