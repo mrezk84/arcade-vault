@@ -19,13 +19,15 @@ export function GamePlayer({ game }: { game: Game }) {
 
   useEffect(() => {
     if (over || paused) return;
-    const t = setInterval(() => setScore((s) => s + Math.floor(10 + Math.random() * 90)), 220);
+    const t = setInterval(() => {
+      setScore((s) => {
+        const next = s + Math.floor(10 + Math.random() * 90);
+        if (next > 0 && next % 2500 < 100) setLevel((l) => l + 1);
+        return next;
+      });
+    }, 220);
     return () => clearInterval(t);
   }, [over, paused]);
-
-  useEffect(() => {
-    if (score > 0 && score % 2500 < 100) setLevel((l) => l + 1);
-  }, [score]);
 
   const endGame = () => setOver(true);
   const restart = () => {
