@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useReveal } from "@/components/use-reveal";
 
 type ContactForm = { name: string; email: string; msg: string };
+type ContactStatus = "idle" | "sending" | "sent" | "error";
 
 const EMPTY_FORM: ContactForm = { name: "", email: "", msg: "" };
 
@@ -53,8 +54,22 @@ export default function AboutPage() {
   useReveal();
 
   const [form, setForm] = useState<ContactForm>(EMPTY_FORM);
-  const [sent, setSent] = useState<string | null>(null);
+  const [status, setStatus] = useState<ContactStatus>("idle");
   const [shake, setShake] = useState(false);
+
+  const sendMessage = async () => {
+    setStatus("sending");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      setStatus(res.ok ? "sent" : "error");
+    } catch {
+      setStatus("error");
+    }
+  };
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -63,7 +78,7 @@ export default function AboutPage() {
       setTimeout(() => setShake(false), 400);
       return;
     }
-    setSent(form.name.trim());
+    sendMessage();
   };
 
   return (
