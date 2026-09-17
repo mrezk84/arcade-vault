@@ -1,6 +1,6 @@
 # SPEC 02 — Home (landing) y About+Contacto
 
-> **Status:** Aprobado
+> **Status:** Implementado
 > **Depends on:** SPEC 01
 > **Date:** 2026-09-17
 > **Objective:** Portar la Home (landing) y la pantalla About+Contacto del prototipo en `references/templates/home-about/` a Next.js App Router, moviendo la Biblioteca de `/` a `/juegos`, agregando `/about`, y actualizando el Nav para reflejar las nuevas rutas.
