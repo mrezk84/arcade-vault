@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useReveal } from "@/components/use-reveal";
 
 type ContactForm = { name: string; email: string; msg: string };
+type ContactStatus = "idle" | "sending" | "sent" | "error";
 
 const EMPTY_FORM: ContactForm = { name: "", email: "", msg: "" };
 
@@ -53,8 +54,32 @@ export default function AboutPage() {
   useReveal();
 
   const [form, setForm] = useState<ContactForm>(EMPTY_FORM);
-  const [sent, setSent] = useState<string | null>(null);
+  const [status, setStatus] = useState<ContactStatus>("idle");
   const [shake, setShake] = useState(false);
+  const [progressStep, setProgressStep] = useState(0);
+
+  useEffect(() => {
+    if (status !== "sending") return;
+    setProgressStep(1);
+    const id = setInterval(() => {
+      setProgressStep((s) => (s < 3 ? s + 1 : s));
+    }, 350);
+    return () => clearInterval(id);
+  }, [status]);
+
+  const sendMessage = async () => {
+    setStatus("sending");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      setStatus(res.ok ? "sent" : "error");
+    } catch {
+      setStatus("error");
+    }
+  };
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -63,7 +88,7 @@ export default function AboutPage() {
       setTimeout(() => setShake(false), 400);
       return;
     }
-    setSent(form.name.trim());
+    sendMessage();
   };
 
   return (
@@ -115,7 +140,7 @@ export default function AboutPage() {
           </div>
 
           <form className={"contact-form" + (shake ? " shake" : "")} onSubmit={onSubmit}>
-            {!sent ? (
+            {status === "idle" ? (
               <>
                 <div className="field">
                   <label>NOMBRE</label>
@@ -153,22 +178,46 @@ export default function AboutPage() {
                 </div>
                 <div className="term-body">
                   <div className="line"><span className="prompt">vault@arcade:~$</span> ./send_message --to=team</div>
-                  <div className="line dim">[OK] Conectando con servidor…</div>
-                  <div className="line dim">[OK] Validando contenido…</div>
-                  <div className="line dim">[OK] Transmitiendo paquete…</div>
-                  <div className="line success">&gt; MENSAJE RECIBIDO. TE RESPONDEREMOS PRONTO. GRACIAS, {sent.toUpperCase()}.<span className="caret">_</span></div>
-                  <div style={{ marginTop: 18 }}>
-                    <button
-                      className="btn ghost"
-                      type="button"
-                      onClick={() => {
-                        setSent(null);
-                        setForm(EMPTY_FORM);
-                      }}
-                    >
-                      ENVIAR OTRO MENSAJE
-                    </button>
-                  </div>
+                  {status === "sending" && (
+                    <>
+                      {progressStep >= 1 && <div className="line dim">[OK] Conectando con servidor…</div>}
+                      {progressStep >= 2 && <div className="line dim">[OK] Validando contenido…</div>}
+                      {progressStep >= 3 && <div className="line dim">[OK] Transmitiendo paquete…</div>}
+                    </>
+                  )}
+                  {status === "sent" && (
+                    <>
+                      <div className="line dim">[OK] Conectando con servidor…</div>
+                      <div className="line dim">[OK] Validando contenido…</div>
+                      <div className="line dim">[OK] Transmitiendo paquete…</div>
+                      <div className="line success">&gt; MENSAJE RECIBIDO. TE RESPONDEREMOS PRONTO. GRACIAS, {form.name.trim().toUpperCase()}.<span className="caret">_</span></div>
+                      <div style={{ marginTop: 18 }}>
+                        <button
+                          className="btn ghost"
+                          type="button"
+                          onClick={() => {
+                            setStatus("idle");
+                            setForm(EMPTY_FORM);
+                          }}
+                        >
+                          ENVIAR OTRO MENSAJE
+                        </button>
+                      </div>
+                    </>
+                  )}
+                  {status === "error" && (
+                    <>
+                      <div className="line dim">[OK] Conectando con servidor…</div>
+                      <div className="line dim">[OK] Validando contenido…</div>
+                      <div className="line dim">[OK] Transmitiendo paquete…</div>
+                      <div className="line error">[ERROR] No se pudo enviar el mensaje.</div>
+                      <div style={{ marginTop: 18 }}>
+                        <button className="btn ghost" type="button" onClick={() => sendMessage()}>
+                          REINTENTAR
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             )}
