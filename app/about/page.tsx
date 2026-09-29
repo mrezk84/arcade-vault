@@ -67,6 +67,8 @@ export default function AboutPage() {
     return () => clearInterval(id);
   }, [status]);
 
+  
+
   const sendMessage = async () => {
     setStatus("sending");
     try {
