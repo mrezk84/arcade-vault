@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Game } from "@/app/data";
 import { useSession } from "@/components/session-provider";
+import { GAME_REGISTRY } from "@/lib/games/registry";
+import type { GameCallbacks, GameController } from "@/lib/games/types";
 
 export function GamePlayer({ game }: { game: Game }) {
   const router = useRouter();
@@ -17,8 +19,31 @@ export function GamePlayer({ game }: { game: Game }) {
   const [name, setName] = useState(user ? user.name : "INVITADO");
   const [saved, setSaved] = useState(false);
 
+  // Si el juego está en el registro, se monta su componente; si no, queda el placeholder.
+  const GameMount = GAME_REGISTRY[game.id];
+  const controllerRef = useRef<GameController | null>(null);
+
+  const callbacks = useMemo<GameCallbacks>(
+    () => ({
+      onScore: setScore,
+      onLives: setLives,
+      onLevel: setLevel,
+      onGameOver: (finalScore) => {
+        setScore(finalScore);
+        setPaused(false);
+        setOver(true);
+      },
+    }),
+    [],
+  );
+
+  const handleReady = useCallback((controller: GameController) => {
+    controllerRef.current = controller;
+  }, []);
+
+  // Puntaje falso solo para los juegos que aún no tienen motor real
   useEffect(() => {
-    if (over || paused) return;
+    if (GameMount || over || paused) return;
     const t = setInterval(() => {
       setScore((s) => {
         const next = s + Math.floor(10 + Math.random() * 90);
@@ -27,10 +52,33 @@ export function GamePlayer({ game }: { game: Game }) {
       });
     }, 220);
     return () => clearInterval(t);
-  }, [over, paused]);
+  }, [GameMount, over, paused]);
 
-  const endGame = () => setOver(true);
+  const togglePause = useCallback(() => {
+    const next = !paused;
+    if (next) controllerRef.current?.pause();
+    else controllerRef.current?.resume();
+    setPaused(next);
+  }, [paused]);
+
+  // Atajos P y Esc: los atiende la app, no el juego
+  useEffect(() => {
+    if (!GameMount || over) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== "KeyP" && e.code !== "Escape") return;
+      e.preventDefault();
+      togglePause();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [GameMount, over, togglePause]);
+
+  const endGame = () => {
+    if (GameMount) controllerRef.current?.end(); // responde con onGameOver
+    else setOver(true);
+  };
   const restart = () => {
+    controllerRef.current?.restart();
     setScore(0);
     setLives(3);
     setLevel(1);
@@ -63,7 +111,7 @@ export function GamePlayer({ game }: { game: Game }) {
           </div>
         </div>
         <div className="hud-actions">
-          <button className="btn yellow" onClick={() => setPaused((p) => !p)}>
+          <button className="btn yellow" onClick={togglePause}>
             {paused ? "REANUDAR" : "PAUSA"}
           </button>
           <button className="btn magenta" onClick={endGame}>
@@ -77,13 +125,17 @@ export function GamePlayer({ game }: { game: Game }) {
 
       <div className="crt">
         <div className="crt-screen">
-          <div className="game-arena">
-            <div className="grid-floor"></div>
-            <div className="enemy e1"></div>
-            <div className="enemy e2"></div>
-            <div className="enemy e3"></div>
-            <div className="player-ship"></div>
-          </div>
+          {GameMount ? (
+            <GameMount callbacks={callbacks} onReady={handleReady} />
+          ) : (
+            <div className="game-arena">
+              <div className="grid-floor"></div>
+              <div className="enemy e1"></div>
+              <div className="enemy e2"></div>
+              <div className="enemy e3"></div>
+              <div className="player-ship"></div>
+            </div>
+          )}
           {paused && (
             <div className="crt-content" style={{ background: "rgba(0,0,0,0.6)", zIndex: 5 }}>
               <div>
