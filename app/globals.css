@@ -488,6 +488,15 @@ a { color: inherit; text-decoration: none; }
   text-shadow: 0 0 8px var(--yellow);
 }
 
+/* Contornos vectoriales blancos sobre negro, como el juego */
+.cover-asteroids { background: radial-gradient(circle at 50% 50%, #06121a, #000 75%); }
+.cover-asteroids::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 150' fill='none' stroke='%23fff' stroke-width='1.6' stroke-linejoin='round'%3E%3Cpolygon points='38,18 54,14 66,24 64,40 50,48 34,42 28,30'/%3E%3Cpolygon points='138,84 156,78 174,88 178,106 164,120 144,118 132,102'/%3E%3Cpolygon points='30,108 40,102 48,110 44,122 32,124'/%3E%3Cpolygon points='92,58 118,74 92,72 68,76' stroke='%2300f5ff' transform='rotate(-24 92 68)'/%3E%3Cpath d='M146 40 l0 0' stroke='%2300f5ff' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M118 62 l0 0' stroke='%2300f5ff' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E") center / cover no-repeat;
+  filter: drop-shadow(0 0 4px rgba(255,255,255,0.35));
+}
+
 .cover-rana { background: linear-gradient(180deg,#001f2a,#0a0a18); }
 .cover-rana::after {
   content: "";

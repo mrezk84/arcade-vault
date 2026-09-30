@@ -80,6 +80,17 @@ export const GAMES: Game[] = [
     plays: "15.6K",
   },
   {
+    id: "asteroids",
+    title: "ASTEROIDS",
+    short: "Rota, empuja y dispara entre rocas a la deriva.",
+    long: "Pilota una nave vectorial con inercia real: gira, propulsa y dispara para partir cada roca en fragmentos más pequeños. Recoge el power-up 3x para abrir fuego triple. Tienes 3 vidas, y cada oleada trae más asteroides.",
+    cat: "SHOOTER",
+    cover: "cover-asteroids",
+    color: "cyan",
+    best: 32800,
+    plays: "9.1K",
+  },
+  {
     id: "ranaria",
     title: "RANARIA",
     short: "Cruza la autopista de pixeles.",
