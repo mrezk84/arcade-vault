@@ -1,6 +1,6 @@
 # SPEC 04 — Integración base con Supabase
 
-> **Status:** Aprobado
+> **Status:** Implementado
 > **Depends on:** SPEC 03
 > **Date:** 2026-09-30
 > **Objective:** Dejar Supabase integrado en la app Next.js (paquetes, clientes de browser y servidor, variables de entorno y un endpoint de verificación) para que los specs futuros de Auth, base de datos, Realtime y Edge Functions partan de una base lista.
@@ -58,15 +58,15 @@ Este spec no introduce estructuras de datos persistentes ni tablas. Solo define 
 
 ## Acceptance criteria
 
-- [ ] `package.json` incluye `@supabase/supabase-js` y `@supabase/ssr`.
-- [ ] Existen `lib/supabase/client.ts` y `lib/supabase/server.ts`, y cada uno exporta una función que devuelve un cliente de Supabase.
-- [ ] Con `.env.local` correcto, `GET /api/health/supabase` responde `200` con `{ "ok": true }`.
-- [ ] Sin `NEXT_PUBLIC_SUPABASE_URL` o sin `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `GET /api/health/supabase` responde `500` con `{ "ok": false, "error": "<mensaje>" }`.
-- [ ] `.env.template` lista `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` sin valores reales, y ya no contiene `SUPRABASE_DB_PASSWORD`.
-- [ ] `.env.local` sigue sin versionarse (`git status` no lo lista).
-- [ ] Ningún archivo versionado contiene la publishable key, la contraseña de la DB ni `service_role`.
-- [ ] El cliente de browser se puede importar desde un Client Component y el de servidor desde un Server Component sin errores de compilación.
-- [ ] `npm run build` compila sin errores de TypeScript ni de ESLint.
+- [x] `package.json` incluye `@supabase/supabase-js` y `@supabase/ssr`.
+- [x] Existen `lib/supabase/client.ts` y `lib/supabase/server.ts`, y cada uno exporta una función que devuelve un cliente de Supabase.
+- [x] Con `.env.local` correcto, `GET /api/health/supabase` responde `200` con `{ "ok": true }`.
+- [x] Sin `NEXT_PUBLIC_SUPABASE_URL` o sin `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `GET /api/health/supabase` responde `500` con `{ "ok": false, "error": "<mensaje>" }`.
+- [x] `.env.template` lista `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` sin valores reales, y ya no contiene `SUPRABASE_DB_PASSWORD`.
+- [x] `.env.local` sigue sin versionarse (`git status` no lo lista).
+- [x] Ningún archivo versionado contiene la publishable key, la contraseña de la DB ni `service_role`.
+- [x] El cliente de browser se puede importar desde un Client Component y el de servidor desde un Server Component sin errores de compilación.
+- [x] `npm run build` compila sin errores de TypeScript ni de ESLint.
 
 ## Decisions
 
