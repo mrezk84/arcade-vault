@@ -96,8 +96,11 @@ export function GamePlayer({ game }: { game: Game }) {
     setSaveError(null);
     const result = await submitScore({ gameId: game.id, name, score });
     setSaving(false);
-    if (result.ok) setSaved(true);
-    else setSaveError(result.error);
+    if (result.ok) {
+      setSaved(true);
+      // Deja ver "PUNTUACIÓN GUARDADA" y pasa a la ficha: ranking y "JUGAR AHORA".
+      setTimeout(() => router.push(`/juegos/${game.id}`), 1800);
+    } else setSaveError(result.error);
   };
 
   return (
