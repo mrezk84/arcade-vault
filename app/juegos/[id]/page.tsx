@@ -67,8 +67,13 @@ export default async function GameDetailPage({ params }: PageProps<"/juegos/[id]
         <div className="leaderboard">
           <h3>MEJORES PUNTUACIONES</h3>
           {scores.length === 0 && (
-            <div className="lb-row" style={{ justifyContent: "center" }}>
-              AÚN SIN PUNTAJES
+            <div className="lb-row" style={{ display: "block", textAlign: "center", padding: "28px 12px" }}>
+              <div className="pixel" style={{ fontSize: 11, color: "var(--ink-dim)", letterSpacing: "0.16em" }}>
+                SIN REGISTROS
+              </div>
+              <div className="mono" style={{ fontSize: 11, color: "var(--ink-faint)", marginTop: 10, letterSpacing: "0.1em" }}>
+                ¡SÉ EL PRIMERO EN ENTRAR AL SALÓN DE LA FAMA!
+              </div>
             </div>
           )}
           {scores.map((r, i) => (
