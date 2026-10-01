@@ -1,6 +1,6 @@
 # SPEC 06 — Leaderboard real y tabla `games` en Supabase
 
-> **Status:** Aprobado
+> **Status:** Implementado
 > **Depends on:** SPEC 01, SPEC 04, SPEC 05
 > **Date:** 2026-10-01
 > **Objective:** Crear en Supabase las tablas `games` y `scores` para que el catálogo de juegos y el ranking top 10 por juego se lean y se guarden en la base de datos, en lugar de usar `GAMES`, `seededScores` y `localStorage["av_scores"]`.
