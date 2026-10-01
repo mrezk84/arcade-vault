@@ -2,14 +2,15 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Game } from "@/app/data";
+import type { Game } from "@/lib/data/games";
 import { useSession } from "@/components/session-provider";
+import { submitScore } from "@/lib/data/scores";
 import { GAME_REGISTRY } from "@/lib/games/registry";
 import type { GameCallbacks, GameController } from "@/lib/games/types";
 
 export function GamePlayer({ game }: { game: Game }) {
   const router = useRouter();
-  const { user, saveScore } = useSession();
+  const { user } = useSession();
 
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
@@ -18,6 +19,8 @@ export function GamePlayer({ game }: { game: Game }) {
   const [over, setOver] = useState(false);
   const [name, setName] = useState(user ? user.name : "INVITADO");
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Si el juego está en el registro, se monta su componente; si no, queda el placeholder.
   const GameMount = GAME_REGISTRY[game.id];
@@ -85,6 +88,19 @@ export function GamePlayer({ game }: { game: Game }) {
     setPaused(false);
     setOver(false);
     setSaved(false);
+    setSaveError(null);
+  };
+
+  const saveCurrentScore = async () => {
+    setSaving(true);
+    setSaveError(null);
+    const result = await submitScore({ gameId: game.id, name, score });
+    setSaving(false);
+    if (result.ok) {
+      setSaved(true);
+      // Deja ver "PUNTUACIÓN GUARDADA" y pasa a la ficha: ranking y "JUGAR AHORA".
+      setTimeout(() => router.push(`/juegos/${game.id}`), 1800);
+    } else setSaveError(result.error);
   };
 
   return (
@@ -173,16 +189,19 @@ export function GamePlayer({ game }: { game: Game }) {
                 />
                 <button
                   className="btn yellow"
-                  onClick={() => {
-                    saveScore({ game: game.id, score, name });
-                    setSaved(true);
-                  }}
+                  onClick={saveCurrentScore}
+                  disabled={saving || name.trim() === ""}
                 >
-                  GUARDAR PUNTUACIÓN
+                  {saving ? "GUARDANDO…" : "GUARDAR PUNTUACIÓN"}
                 </button>
               </div>
             ) : (
               <div className="toast-saved">▸ PUNTUACIÓN GUARDADA_</div>
+            )}
+            {saveError && (
+              <div role="alert" style={{ color: "var(--magenta)", marginTop: 12 }}>
+                {saveError}
+              </div>
             )}
             <div className="actions">
               <button className="btn" onClick={restart}>

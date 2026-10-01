@@ -1,16 +1,17 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { GAMES, seededScores } from "@/app/data";
+import { getGame } from "@/lib/data/games";
+import { getTopScores } from "@/lib/data/scores";
 
 export default async function GameDetailPage({ params }: PageProps<"/juegos/[id]">) {
   const { id } = await params;
-  const game = GAMES.find((g) => g.id === id);
+  const game = await getGame(id);
 
   if (!game) {
     notFound();
   }
 
-  const scores = seededScores(id.length * 17 + 3, 10);
+  const scores = await getTopScores(id, 5);
 
   return (
     <div className="av-detail fade-in">
@@ -29,8 +30,8 @@ export default async function GameDetailPage({ params }: PageProps<"/juegos/[id]
           <p>{game.long}</p>
           <div className="stat-strip">
             <div>
-              <div className="l">Partidas</div>
-              <div className="v">{game.plays}</div>
+              <div className="l">Puntajes</div>
+              <div className="v">{game.total.toLocaleString("es-ES")}</div>
             </div>
             <div>
               <div className="l">Mejor global</div>
@@ -65,9 +66,19 @@ export default async function GameDetailPage({ params }: PageProps<"/juegos/[id]
       <aside>
         <div className="leaderboard">
           <h3>MEJORES PUNTUACIONES</h3>
+          {scores.length === 0 && (
+            <div className="lb-row" style={{ display: "block", textAlign: "center", padding: "28px 12px" }}>
+              <div className="pixel" style={{ fontSize: 11, color: "var(--ink-dim)", letterSpacing: "0.16em" }}>
+                SIN REGISTROS
+              </div>
+              <div className="mono" style={{ fontSize: 11, color: "var(--ink-faint)", marginTop: 10, letterSpacing: "0.1em" }}>
+                ¡SÉ EL PRIMERO EN ENTRAR AL SALÓN DE LA FAMA!
+              </div>
+            </div>
+          )}
           {scores.map((r, i) => (
             <div
-              key={r.name}
+              key={r.rank}
               className={"lb-row" + (i === 0 ? " top1" : i === 1 ? " top2" : i === 2 ? " top3" : "")}
             >
               <div className="rk">#{String(r.rank).padStart(2, "0")}</div>
