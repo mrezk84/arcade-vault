@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { GAMES, seededScores } from "@/app/data";
+import { seededScores } from "@/app/data";
+import { getGame } from "@/lib/data/games";
 
 export default async function GameDetailPage({ params }: PageProps<"/juegos/[id]">) {
   const { id } = await params;
-  const game = GAMES.find((g) => g.id === id);
+  const game = await getGame(id);
 
   if (!game) {
     notFound();
@@ -29,8 +30,8 @@ export default async function GameDetailPage({ params }: PageProps<"/juegos/[id]
           <p>{game.long}</p>
           <div className="stat-strip">
             <div>
-              <div className="l">Partidas</div>
-              <div className="v">{game.plays}</div>
+              <div className="l">Puntajes</div>
+              <div className="v">{game.total.toLocaleString("es-ES")}</div>
             </div>
             <div>
               <div className="l">Mejor global</div>

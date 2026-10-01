@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Game } from "@/app/data";
+import type { Game } from "@/lib/data/games";
 import { useSession } from "@/components/session-provider";
 import { GAME_REGISTRY } from "@/lib/games/registry";
 import type { GameCallbacks, GameController } from "@/lib/games/types";

@@ -2,9 +2,10 @@
 
 import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { CATS, GAMES, type Game } from "@/app/data";
+import { CATS } from "@/app/data";
+import type { GameWithStats } from "@/lib/data/games";
 
-function GameCard({ game }: { game: Game }) {
+function GameCard({ game }: { game: GameWithStats }) {
   const tiltRef = useRef<HTMLAnchorElement>(null);
 
   const onMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -55,15 +56,15 @@ function GameCard({ game }: { game: Game }) {
   );
 }
 
-export default function BibliotecaPage() {
+export function LibraryView({ games }: { games: GameWithStats[] }) {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("TODOS");
 
   const filtered = useMemo(() => {
-    return GAMES.filter(
+    return games.filter(
       (g) => (cat === "TODOS" || g.cat === cat) && g.title.toLowerCase().includes(q.toLowerCase())
     );
-  }, [q, cat]);
+  }, [games, q, cat]);
 
   return (
     <div className="fade-in">

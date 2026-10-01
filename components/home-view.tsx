@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { GAMES, type Game } from "@/app/data";
+import type { Game } from "@/lib/data/games";
 import { useReveal } from "@/components/use-reveal";
 
 function FloatingSilhouettes() {
@@ -157,7 +157,7 @@ const TOP_PLAYERS = [
   { r: 5, p: "GLITCHA",  s: 138900 },
 ];
 
-export default function HomePage() {
+export function HomeView({ games }: { games: Game[] }) {
   useReveal();
   const router = useRouter();
 
@@ -214,7 +214,7 @@ export default function HomePage() {
           <div className="section-rule"></div>
         </div>
         <div className="mini-rail">
-          {GAMES.slice(0, 6).map((g) => (
+          {games.slice(0, 6).map((g) => (
             <MiniCard key={g.id} game={g} onClick={() => router.push(`/juegos/${g.id}`)} />
           ))}
         </div>
