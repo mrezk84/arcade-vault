@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { seededScores } from "@/app/data";
 import { getGame } from "@/lib/data/games";
+import { getTopScores } from "@/lib/data/scores";
 
 export default async function GameDetailPage({ params }: PageProps<"/juegos/[id]">) {
   const { id } = await params;
@@ -11,7 +11,7 @@ export default async function GameDetailPage({ params }: PageProps<"/juegos/[id]
     notFound();
   }
 
-  const scores = seededScores(id.length * 17 + 3, 10);
+  const scores = await getTopScores(id, 5);
 
   return (
     <div className="av-detail fade-in">
@@ -66,9 +66,14 @@ export default async function GameDetailPage({ params }: PageProps<"/juegos/[id]
       <aside>
         <div className="leaderboard">
           <h3>MEJORES PUNTUACIONES</h3>
+          {scores.length === 0 && (
+            <div className="lb-row" style={{ justifyContent: "center" }}>
+              AÚN SIN PUNTAJES
+            </div>
+          )}
           {scores.map((r, i) => (
             <div
-              key={r.name}
+              key={r.rank}
               className={"lb-row" + (i === 0 ? " top1" : i === 1 ? " top2" : i === 2 ? " top3" : "")}
             >
               <div className="rk">#{String(r.rank).padStart(2, "0")}</div>
